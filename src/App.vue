@@ -1,14 +1,14 @@
 <template>
 <div id="app">
-  <Header>
+  <header-section>
     Ich, Header
-  </Header>
+  </header-section>
 
   <router-view/>
 
-  <Footer>
+  <footer-section>
       &copy; 2018 - Florenz Heldermann (Frontend), Plugindata provided by Jens Tornell
-  </Footer>
+  </footer-section>
 </div>
 </template>
 
@@ -16,10 +16,16 @@
 import Header from './components/Header.vue';
 import Footer from './components/Footer.vue';
 import Issues from './components/Issues.vue';
+import List from './components/List.vue';
 
 export default {
     name: 'app',
-    components: {Header, Issues, Footer},
+    components: {
+        'header-section': Header,
+        Issues,
+        List,
+        'footer-section': Footer
+    },
     data () {
         return {
             epIssues: 'https://api.github.com/repos/jenstornell/kirby-plugins/issues',

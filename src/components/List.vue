@@ -3,7 +3,7 @@
   <slot></slot>
   <ul class="labels">
     <li v-for="label in labels">
-      <router-link :to="'/label/' + label.name">
+      <router-link :to="{ name: 'list-label', params: { type: label.name }}">
         {{ label.name}}
       </router-link>
     </li>
@@ -36,33 +36,45 @@ import parse from 'parse-link-header';
 import Pagination from '../components/Pagination.vue';
 
 export default {
-    name: 'Issues',
+    name: 'Items',
     components: { Pagination },
     data() {
         return {
             currentPage: this.$route.params.page || 1,
-            perPage: 3,
+            perPage: 5,
             lastPage: 0,
             headerLink: '',
             apiBaseLink: this.$parent.epIssues,
             apiLink: '',
+            type: this.$route.params.type,
             results: [],
             labels: [],
+            labelsPerPage: 100,
             issues: []
         }
     },
     created() {
-        this.buildApiUrl();
+        this.getItems();
         this.getLabels();
-        this.getIssues();
+    },
+    watch: {
+        '$route.params.type': function() {
+            this.type = this.$route.params.type;
+            this.getItems();
+        }
     },
     methods: {
-        buildApiUrl: function() {
-            console.log(this.currentPage);
-            this.apiLink = this.$parent.epIssues + '?page=' + this.currentPage + '&per_page=' + this.perPage;
-            console.log(this.apiLink);
-        },
-        getIssues: function() {
+        getItems: function() {
+            if (this.type === 'all') {
+                // build all api url
+                // todo: template literal
+                this.apiLink = this.$parent.epIssues + '?page=' + this.currentPage + '&per_page=' + this.perPage;
+            } else {
+                this.apiLink = this.$parent.epIssues + '?labels=' + this.type + '&page=' + this.currentPage + '&per_page=' + this.perPage;
+            }
+
+            console.log(this.apiLink, this.currentPage);
+
             axios.get(this.apiLink)
                 .then(response => {
                     this.results = response.data;
@@ -70,31 +82,20 @@ export default {
                     this.getTotalPages(this.headerLink);
                 })
                 .catch( e => {
-                    this.errors.push(e);
+                    console.log(e);
                 })
             ;
         },
         getTotalPages: function(header) {
             let parsed = parse(header);
-            this.lastPage = parsed['last'].page;
+            // if (parsed['last'] !== null) {
+            //     // this.lastPage = parsed['last'].page;
+            // };
         },
         getLabels: function() {
-            axios.get(this.$parent.epLabels).then(response => {
+            axios.get(this.$parent.epLabels + '?per_page=' + this.labelsPerPage).then(response => {
                 this.labels = response.data;
             });
-        },
-        getNext: function() {
-            axios.get(this.$parent.epIssues + '?page=' + this.page)
-                .then(response => {
-                    this.results = response.data;
-                    console.log(this.results);
-                })
-                .catch( e => {
-                    this.errors.push(e);
-                })
-            ;
-        },
-        getPrev: function() {
         }
     }
 }

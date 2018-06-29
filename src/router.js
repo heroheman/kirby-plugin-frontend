@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import App from './App.vue'
 import Issues from './components/Issues.vue'
+import List from './components/List.vue'
 import Detail from './components/Detail.vue'
 import Label from './components/Label.vue'
 import About from './components/About.vue'
@@ -29,6 +30,25 @@ export default new Router({
       path: '/label/:name',
       name: 'label',
       component: Label
+    },
+    {
+      path: '/list/:type/',
+      name: 'list-label',
+      component: List
+    },
+    {
+      path: '/list/:type/:page',
+      name: 'list-label-page',
+      component: List
     }
   ]
 })
+
+  // /list/all/32
+  // /list/:type/:page
+
+  // /list/Panel/2
+  // /list/Panel-Screenshot/2
+  // /list/:type/:page
+
+  // /detail/:id
