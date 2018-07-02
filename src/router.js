@@ -13,8 +13,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'issues',
-      component: Issues
+      redirect: '/list/all'
     },
     {
       path: '/about',
@@ -40,7 +39,12 @@ export default new Router({
       path: '/list/:type/:page',
       name: 'list-label-page',
       component: List
-    }
+    },
+    {
+      path: '/search/:query/',
+      name: 'search',
+      component: List
+    },
   ]
 })
 
