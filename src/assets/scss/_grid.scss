@@ -1,0 +1,37 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+.l-container {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  max-width: $maxWidth;
+
+
+  &--grid {
+    display: grid;
+    grid-template-areas:  "header main main main"
+                          "header main main main"
+                          "header main main main"
+                          "header footer footer footer";
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+  }
+}
+
+.l-header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.l-main {
+  grid-area: main;
+}
+.l-footer {
+  grid-area: footer;
+}

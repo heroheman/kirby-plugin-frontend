@@ -1,38 +1,64 @@
 <template>
-<div class="issues">
+<div class="list">
 
-  <input name="" type="text"
-         v-model="query"
-         @keyup.enter="searchQuery"
-         @input="searchQuery"
-         />
-  <button @click="searchQuery">Lupe</button>
-  {{ query }}
+  <section class="list__search">
+    <input class="list__searchfield" name="" type="text"
+           placeholder="search for plugin, label, author or anything else"
+           v-model="query"
+           @input="searchQuery" />
 
-  <ul class="labels">
-    <li>
-      <router-link :to="{ name: 'list-label', params: { type: 'all' }}">
-        all
-      </router-link>
-    </li>
-    <li v-for="label in labels">
-      <router-link :to="{ name: 'list-label', params: { type: label.name }}">
-        {{ label.name}}
-      </router-link>
-    </li>
-  </ul>
+    <div class="list__tools">
+      <p class="list__ratelimit" v-if="rateLimit !== ''">
+        Ratelimit:
+        {{rateLimit.resources.search.remaining}}
+        /
+        {{rateLimit.resources.search.limit}}
+      </p>
+      <button class="list__searchbutton" @click="searchQuery">
+        <img alt="" src="../assets/icons/search.png"/>
+      </button>
+    </div>
+    <p class="list__smallprint">
+      The public Github API is very limited without authentication. If the limit is reached, please wait a moment.
+    </p>
+  </section>
 
-  <ul v-for="item in results" v-if="results !== 0">
-    <li>
-      <hr/>
-      <router-link :to="'/detail/' + item.number">
-        {{ item.title }}
+  <!-- <ul class="labels"> -->
+  <!--   <li> -->
+  <!--     <router-link :to="{ name: 'list-label', params: { type: 'all' }}"> -->
+  <!--       all -->
+  <!--     </router-link> -->
+  <!--   </li> -->
+  <!--   <li v-for="label in labels"> -->
+  <!--     <router-link :to="{ name: 'list-label', params: { type: label.name }}"> -->
+  <!--       {{ label.name}} -->
+  <!--     </router-link> -->
+  <!--   </li> -->
+  <!-- </ul> -->
+
+  <p v-if="query_temp !== ''">
+    <strong>{{ resultsCount }}</strong> results for term <strong>{{ query_temp }}</strong>:
+  </p>
+  <ul class="list__items" v-if="results !== 0">
+    <li class="list__item listitem" v-for="item in results">
+      <router-link tag="h3" class="listitem__name" :to="'/detail/' + item.number">
+        <a>
+          {{ item.title }}
+        </a>
       </router-link>
-      <ul class="labels">
-        <li v-for="label in item.labels">
-          {{ label.name }}
+      <ul class="labels listitem__labels">
+        <li class="listitem__label" v-for="label in item.labels">
+          <router-link
+            :to="{name:'list-label', params:{ type: label.name }}"
+            :class="['label', getLabelClass(label.name)]"
+            >
+            {{ label.name }}
+          </router-link>
         </li>
       </ul>
+      <VueMarkdown :source="item.body" class="listitem__description listitem__description--excerpt">
+        {{ item.body }}
+      </VueMarkdown>
     </li>
   </ul>
 
@@ -55,14 +81,18 @@
 import axios from 'axios';
 import parse from 'parse-link-header';
 import Pagination from '../components/Pagination.vue';
+import VueMarkdown from 'vue-markdown';
 let timeout = null;
 
 export default {
     name: 'Items',
-    components: { Pagination },
+    components: { Pagination, VueMarkdown },
     data() {
         return {
             query: this.$route.params.query || '',
+            query_temp: '',
+            rateLimit: '',
+            rateLimitReset: '',
             currentPage: this.$route.params.page || 1,
             perPage: 20,
             lastPage: this.$route.params.page || 1,
@@ -71,6 +101,7 @@ export default {
             apiLink: '',
             type: this.$route.params.type,
             results: [],
+            resultsCount: '',
             labels: [],
             labelsPerPage: 100
         }
@@ -78,6 +109,7 @@ export default {
     created() {
         this.getItems();
         this.getLabels();
+        this.getRateLimit();
     },
     watch: {
         '$route.params.type': function() {
@@ -85,9 +117,22 @@ export default {
             this.getItems();
         },
         '$route.params.page': function() {
-            this.currentPage= this.$route.params.page;
+            this.currentPage = this.$route.params.page;
             this.getItems();
+        },
+        '$route.params.query': function() {
+            // this.query = this.$route.params.query;
+            // this.searchQuery();
+        },
+        $route: function (to, from){
+            if( to.name !== 'search') {
+                console.log(to.name);
+                this.query = '';
+                this.query_temp = '';
+            }
         }
+    },
+    computed: {
     },
     methods: {
         getItems: function() {
@@ -129,23 +174,42 @@ export default {
                 this.labels = response.data;
             });
         },
+        getLabelClass: function(label) {
+            return `is-${label}`;
+        },
+        getRateLimit: function() {
+            axios.get('https://api.github.com/rate_limit')
+                .then(response => {
+                    this.rateLimit = response.data;
+                })
+                .catch( e => {
+                    console.log(e);
+                })
+        },
         searchQuery: function() {
             let url = `https://api.github.com/search/issues?q=${this.query}+repo:jenstornell/kirby-plugins&sort=created&order=asc`;
+
             clearTimeout(timeout);
+
             timeout = setTimeout( ()=> {
-                console.log(this.query, url);
                 this.$router.push({name: 'search', params: {query: this.query}});
+                this.query_temp = this.query;
+                this.resultsCount = '';
                 if (this.query !== '') {
+                    console.log('search called');
                     axios.get(url)
                         .then(response => {
                             this.results = response.data.items;
-                            console.log(response.meta);
+                            this.resultsCount = response.data.total_count;
+                            this.getRateLimit();
                         })
                         .catch( e => {
                             console.log(e);
                         })
                 } else {
                     this.$router.push({name: 'list-label', params: {type: 'all'}});
+                    this.query = '';
+                    this.query_temp = this.query;
                     this.getItems();
                 }
             }, 1000);
@@ -155,12 +219,145 @@ export default {
 </script>
 
 <style lang="scss">
-  .issues {
-      padding: 10px;
-  }
-  ul.labels {
-      padding: 0;
-      margin: 30px 0;
-      li { display: inline-block; margin-right: 20px;}
-  }
+.list {
+    padding: 10px;
+
+    &__search {
+        position: relative;
+        top: 1rem;
+        width: 100%;
+        margin-bottom: 5rem;
+    }
+    &__searchfield {
+        width: 100%;
+        padding: 1rem;
+    }
+    &__tools {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+    }
+    &__ratelimit,
+    &__searchbutton {
+        display: inline;
+    }
+    &__ratelimit {
+        position: relative;
+        font-size: 1.2rem;
+        color: #aaa;
+        margin-right: .5rem;
+        vertical-align: text-top;
+    }
+    &__searchbutton {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 0;
+        background: 0;
+        img {
+            width: 2rem;
+            height: 2rem;
+        }
+    }
+    &__smallprint {
+        font-size: 1.2rem;
+        text-align: right;
+        color: #aaa;
+        margin: 0;
+        margin-top: 0.3rem;
+    }
+
+
+    &__items {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__item {
+        border: 1px solid #eee;
+        margin-bottom: 3rem;
+        padding: 2rem;
+    }
+}
+
+.listitem {
+    display: grid;
+    grid-template-areas: "name name labels"
+                             "description description description";
+    grid-template-columns: 40% 1fr;
+    grid-template-rows: 1fr;
+
+    &__name {
+        grid-area: name;
+        display: block;
+        margin: 0;
+    }
+    &__labels {
+        grid-area: labels;
+        text-align: right;
+        margin: 0;
+    }
+    &__description {
+        grid-area: description;
+        margin-top: 1rem;
+        &--excerpt {
+            img, img, pre, ul, strong, br, table,
+            h1, h2, h3, h4, h5, h6, p > a, blockquote + p
+            { display: none; }
+
+            p {
+                padding: 0;
+                margin: 0;
+            }
+
+            blockquote {
+                font-style: italic;
+                padding: 0;
+                margin: 0;
+                p {display: inline;}
+            }
+        }
+    }
+}
+
+.labels {
+    padding: 0;
+    display: inline-block;
+    li {
+        display: inline-block;
+        margin-right: 1rem;
+    }
+}
+
+.label {
+    display: inline-block;
+    background: #f2f2f2;
+    color: black;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    padding: .2rem .5rem;
+}
+
+.is-Plugin { background-color: #bfd4f2;}
+.is-Screenshot { background-color: #207DE5; color: #fff;}
+.is-Field { background-color: #FAD8C7;}
+.is-Panel { background-color: #000; color: #fff;}
+.is-CLI { background-color: #006B75; color: #fff;}
+.is-Commercial { background-color: #5319e7; color: #fff;}
+.is-Blueprint { background-color: #C7DEF8;}
+.is-Controller { background-color: #bfdadc;}
+.is-Beta { background-color: #ED6420; color: #fff;}
+.is-Widget { background-color: #BFE5BF;}
+.is-Misc { background-color: #5BDDF6;}
+.is-Snippet { background-color: #FEFC20;}
+.is-Template { background-color: #F7C6C7;}
+.is-Tag { background-color: #c7e9bd;}
+.is-Model { background-color: #d4c5f9;}
+.is-Tutorial { background-color: #e1f7c6;}
+.is-Core { background-color: #e3e2e2;}
+.is-Broken { background-color: #e11d21; color: #fff;}
+.is-Field-method { background-color: #d4c5f9;}
+.is-Deprecated { background-color: #FBCA04;}
+.is-email { background-color: #80eda9;}
+
 </style>
