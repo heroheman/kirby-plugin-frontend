@@ -1,24 +1,23 @@
 <template>
-<div id="app" class="l-container l-container--grid">
-  <!-- l-header -->
-  <header-section :labels="labels">
-    kirby <span>Plugins</span>
-  </header-section>
+    <div id="app" class="l-container l-container--grid">
+        <SvgIcons></SvgIcons>
 
-  <main class="l-main">
-    <router-view/>
-  </main>
+        <!-- l-header -->
+        <header-section :labels="labels">
+            kirby <span>plugins</span>
+        </header-section>
 
-  <!-- l-footer -->
-  <footer-section>
-      &copy; 2018 - Florenz Heldermann (Frontend), Plugindata provided by Jens Tornell
-  </footer-section>
-</div>
+        <main class="l-main">
+            <router-view/>
+        </main>
+
+    </div>
 </template>
 
 <script>
 import Header from './components/Header.vue';
 import Footer from './components/Footer.vue';
+import SvgIcons from './components/svgicons.vue';
 import List from './components/List.vue';
 import axios from 'axios';
 
@@ -27,7 +26,7 @@ export default {
     components: {
         'header-section': Header,
         List,
-        'footer-section': Footer
+        SvgIcons
     },
     data () {
         return {

@@ -1,0 +1,24 @@
+.btn {
+    display: inline-block;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    background: $cAccent;
+    font-family: $font-main;
+    padding: 1rem;
+    color: white;
+    vertical-align: middle;
+    line-height: 1;
+    font-weight: 500;
+
+    svg {
+        fill: currentColor;
+        height: 1.7rem;
+        width: 1.7rem;
+        margin-right: .5rem;
+    }
+
+    &:hover {
+        background: lighten($cAccent, 20%);
+    }
+}
