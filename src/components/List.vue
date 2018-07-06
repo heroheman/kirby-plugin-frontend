@@ -39,9 +39,14 @@
   <p v-if="query_temp !== ''">
     <strong>{{ resultsCount }}</strong> results for term <strong>{{ query_temp }}</strong>:
   </p>
+
+  <div class="loading" :loading="loading">
+    <pacman-loader :loading="loading" color="red"></pacman-loader>
+  </div>
+
   <ul class="list__items" v-if="results !== 0">
     <li class="list__item listitem" v-for="item in results">
-      <router-link tag="h3" class="listitem__name" :to="'/detail/' + item.number">
+      <router-link tag="h3" class="listitem__name" :to="'/detail/' + item.number" :key="item.id">
         <a>
           {{ item.title }}
         </a>
@@ -69,9 +74,9 @@
   <Pagination
     :lastPage="lastPage"
     :url="apiBaseLink"
+    :query="query"
     :type="type"
     :perPage="perPage">
-    Pagination
   </Pagination>
 
 </div>
@@ -79,6 +84,7 @@
 
 <script>
 import axios from 'axios';
+import PacmanLoader from 'vue-spinner/src/PacmanLoader.vue'
 import parse from 'parse-link-header';
 import Pagination from '../components/Pagination.vue';
 import VueMarkdown from 'vue-markdown';
@@ -86,7 +92,7 @@ let timeout = null;
 
 export default {
     name: 'Items',
-    components: { Pagination, VueMarkdown },
+    components: { Pagination, VueMarkdown, PacmanLoader },
     data() {
         return {
             query: this.$route.params.query || '',
@@ -103,6 +109,7 @@ export default {
             results: [],
             resultsCount: '',
             labels: [],
+            loading: true,
             labelsPerPage: 100
         }
     },
@@ -121,34 +128,41 @@ export default {
             this.getItems();
         },
         '$route.params.query': function() {
-            // this.query = this.$route.params.query;
-            // this.searchQuery();
+            this.query = this.$route.params.query;
+            this.getItems();
         },
         $route: function (to, from){
-            if( to.name !== 'search') {
-                console.log(to.name);
-                this.query = '';
-                this.query_temp = '';
-            }
+            this.getRateLimit();
         }
     },
     computed: {
     },
     methods: {
         getItems: function() {
+          this.loading = true;
+          this.results = [];
+            // build all api url
+            // todo: template literal
             if (this.type === 'all') {
-                // build all api url
-                // todo: template literal
                 this.apiLink = this.$parent.epIssues + '?page=' + this.currentPage + '&per_page=' + this.perPage;
+            } else if(this.type === 'search') {
+                this.apiLink = `https://api.github.com/search/issues?q=${this.query}+repo:jenstornell/kirby-plugins&sort=created&order=asc&page=${this.currentPage}&per_page=${this.perPage}`;
             } else {
                 this.apiLink = this.$parent.epIssues + '?labels=' + this.type + '&page=' + this.currentPage + '&per_page=' + this.perPage;
             }
 
-            console.log(this.apiLink, this.currentPage);
+            console.log("api link",this.apiLink)
 
             axios.get(this.apiLink)
                 .then(response => {
-                    this.results = response.data;
+                    if(this.type === 'search') {
+                      this.loading = false;
+                      this.results = response.data.items;
+                      this.resultsCount = response.data.total_count;
+                    } else {
+                      this.loading = false;
+                      this.results = response.data;
+                    }
                     this.headerLink = response.headers.link;
                     this.getTotalPages(this.headerLink);
                 })
@@ -192,25 +206,14 @@ export default {
             clearTimeout(timeout);
 
             timeout = setTimeout( ()=> {
-                this.$router.push({name: 'search', params: {query: this.query}});
                 this.query_temp = this.query;
                 this.resultsCount = '';
                 if (this.query !== '') {
-                    console.log('search called');
-                    axios.get(url)
-                        .then(response => {
-                            this.results = response.data.items;
-                            this.resultsCount = response.data.total_count;
-                            this.getRateLimit();
-                        })
-                        .catch( e => {
-                            console.log(e);
-                        })
+                    this.$router.push({name: 'list-label', params: {type: 'search', query: this.query}});
                 } else {
-                    this.$router.push({name: 'list-label', params: {type: 'all'}});
                     this.query = '';
                     this.query_temp = this.query;
-                    this.getItems();
+                    this.$router.push({name: 'list-label', params: {type: 'all'}});
                 }
             }, 1000);
         }
@@ -220,7 +223,9 @@ export default {
 
 <style lang="scss">
 .list {
+  position: relative;
     padding: 10px;
+    min-height: 70vh;
 
     &__search {
         position: relative;

@@ -34,7 +34,7 @@ export default new Router({
       component: Detail
     },
     {
-      path: '/list/:type/',
+      path: '/list/:type/:query?/:page?',
       name: 'list-label',
       component: List
     },
@@ -42,12 +42,7 @@ export default new Router({
       path: '/list/:type/:page',
       name: 'list-label-page',
       component: List
-    },
-    {
-      path: '/search/:query/',
-      name: 'search',
-      component: List
-    },
+    }
   ]
 })
 

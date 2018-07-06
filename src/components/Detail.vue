@@ -12,6 +12,9 @@
 
     <div class="detail__body">
 
+        <div class="loading" :loading="loading">
+          <pacman-loader :loading="loading" color="red"></pacman-loader>
+        </div>
 
         <vue-markdown class="detail__body-main" :source="detail.body">
             Loading Data
@@ -71,7 +74,7 @@
 
 
             <div class="comments" v-if="detail.comments > 0">
-                <div class="comment" v-for="comment in detailComments">
+                <div class="comment" v-for="comment in detailComments" :key="comment.id">
                     <div class="comment__img">
                         <img :src="comment.user.avatar_url" :alt="comment.user.login">
                     </div>
@@ -81,9 +84,9 @@
                                 {{ comment.user.login }}
                             </a>
                         </span>
-                        <span class="comment__date" :time="getRelTime(comment.created_at)">
+                        <!-- <span class="comment__date" :time="getRelTime(comment.created_at)">
                             test
-                        </span>
+                        </span> -->
                         <span class="comment__link">
                             <a :href="comment.html_url">
                                 show comment on github
@@ -91,7 +94,7 @@
                         </span>
                     </div>
                     <VueMarkdown class="comment__body" :source="comment.body">
-                    </VueMarkdown> 
+                    </VueMarkdown>
                 </div>
             </div>
         </div>
@@ -103,24 +106,27 @@
 import axios from 'axios';
 import moment from 'moment';
 import VueMarkdown from 'vue-markdown';
+import PacmanLoader from 'vue-spinner/src/PacmanLoader.vue'
 import SvgIcon from './SvgIcon.vue';
 
 export default {
     name: 'detail',
     data() {
         return {
-            detail: [],
-            detailId: this.$route.params.id,
-            detailComments: [],
-            showReadme: false,
-            readme: '',
-            pluginUrl: '',
-            pluginRepo: '',
+          loading: true,
+          detail: [],
+          detailId: this.$route.params.id,
+          detailComments: [],
+          showReadme: false,
+          readme: '',
+          pluginUrl: '',
+          pluginRepo: '',
         }
     },
-    components: { VueMarkdown, SvgIcon },
+    components: { VueMarkdown, SvgIcon, PacmanLoader },
     mounted() {
         axios.get('https://api.github.com/repos/jenstornell/kirby-plugins/issues/' + this.detailId).then(response => {
+          this.loading = false;
             this.detail = response.data;
             this.getRepoUrl(this.detail.body);
             // this.getReadme();
@@ -148,16 +154,16 @@ export default {
             return `is-${label}`;
         },
         getRelTime: function() {
-            // #TODO: relative time 
+            // #TODO: relative time
         },
         getRepoUrl: function (bodytext) {
             console.log(bodytext);
             let urlparts = [];
-            // find first github url. 
+            // find first github url.
             // also remove a paranthesis, if its in markdown
             this.pluginUrl = bodytext.match(/https?:\/\/github.com[^\s\)]+/);
             urlparts = this.pluginUrl[0].split('/');
-            this.pluginRepo = urlparts[3] + '/' + urlparts[4];  
+            this.pluginRepo = urlparts[3] + '/' + urlparts[4];
         }
     }
 }
@@ -180,7 +186,7 @@ export default {
         span {
             font-size: inherit;
             color: #ccc;
-        }                
+        }
     }
     &__subheadline {
         position: relative;
@@ -225,7 +231,7 @@ export default {
         }
 
         &-main {
-
+          min-height: 30vh;
         }
 
         &-section {
@@ -257,7 +263,7 @@ export default {
     .comment {
         display: grid;
         grid-template-areas: "img head"
-                            "img body" 
+                            "img body"
                             "img body";
         grid-template-columns: 1fr 7fr;
         grid-template-rows: 1fr 1fr 1fr;
