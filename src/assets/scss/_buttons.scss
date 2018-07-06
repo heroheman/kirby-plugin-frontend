@@ -1,4 +1,5 @@
 .btn {
+    position: relative;
     display: inline-block;
     appearance: none;
     -webkit-appearance: none;
@@ -10,6 +11,14 @@
     vertical-align: middle;
     line-height: 1;
     font-weight: 500;
+
+    &--icon {
+        padding-left: 3.5rem;
+        svg {
+            position: absolute;
+            left: 1rem;
+        }
+    }
 
     svg {
         fill: currentColor;

@@ -14,7 +14,10 @@
           <router-link to="/">Home</router-link>
         </li>
         <li>
-          <router-link :to="{'path': '/about'}">About</router-link>
+          <router-link :to="{'path': '/about'}">About & FAQ</router-link>
+        </li>
+        <li>
+          <router-link :to="{'path': '/privacy'}">Privacy</router-link>
         </li>
       </ul>
       

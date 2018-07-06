@@ -13,3 +13,12 @@ export default {
 }
 </script>
 
+<style scoped>
+.icon {
+    height: 1.7rem;
+    width: 1.7rem;
+    fill: red;
+}
+</style>
+
+

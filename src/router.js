@@ -5,10 +5,14 @@ import Issues from './components/Issues.vue'
 import List from './components/List.vue'
 import Detail from './components/Detail.vue'
 import About from './components/About.vue'
+import Privacy from './components/Privacy.vue'
 
 Vue.use(Router)
 
 export default new Router({
+  scrollBehavior() {
+    return { x: 0, y: 0 };
+  },
   routes: [
     {
       path: '/',
@@ -18,6 +22,11 @@ export default new Router({
       path: '/about',
       name: 'about',
       component: About
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: Privacy
     },
     {
       path: '/detail/:id',
