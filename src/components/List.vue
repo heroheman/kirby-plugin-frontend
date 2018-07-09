@@ -36,12 +36,32 @@
   <!--   </li> -->
   <!-- </ul> -->
 
-  <p v-if="query_temp !== ''">
-    <strong>{{ resultsCount }}</strong> results for term <strong>{{ query_temp }}</strong>:
-  </p>
-
   <div class="loading" :loading="loading">
     <pacman-loader :loading="loading" color="red"></pacman-loader>
+  </div>
+
+  <div class="list__toolbar toolbar">
+    <p class="toolbar__text" v-if="query_temp !== ''">
+      <strong>{{ resultsCount }}</strong> results for term <strong>{{ query_temp }}</strong>:
+    </p>
+
+    <div class="toolbar__filter">
+        <select v-model="sortBy">
+          <option value="created">created</option>
+          <option value="updated">updated</option>
+          <option value="comments">comments</option>
+        </select>
+
+        <button class="btn btn--icon" v-if="sortDirection === 'asc'" @click="sortDirection = 'desc'" title="descending">
+          <SvgIcon :icon="'sort-amount-asc'"></SvgIcon>
+          asc
+        </button>
+
+        <button class="btn btn--icon" v-if="sortDirection === 'desc'" @click="sortDirection = 'asc'" title="ascending">
+          <SvgIcon :icon="'sort-amount-desc'"></SvgIcon>
+          desc
+        </button>
+    </div>
   </div>
 
   <ul class="list__items" v-if="results !== 0">
@@ -87,11 +107,12 @@ import PacmanLoader from 'vue-spinner/src/PacmanLoader.vue'
 import parse from 'parse-link-header';
 import Pagination from '../components/Pagination.vue';
 import VueMarkdown from 'vue-markdown';
+import SvgIcon from './SvgIcon.vue';
 let timeout = null;
 
 export default {
     name: 'Items',
-    components: { Pagination, VueMarkdown, PacmanLoader },
+    components: { Pagination, VueMarkdown, PacmanLoader, SvgIcon },
     data() {
         return {
             query: this.$route.params.query || '',
@@ -106,6 +127,8 @@ export default {
             apiLink: '',
             type: this.$route.params.type,
             results: [],
+            sortBy: 'created',
+            sortDirection: 'desc',
             resultsCount: '',
             labels: [],
             loading: true,
@@ -130,8 +153,14 @@ export default {
             this.currentPage = this.$route.params.page;
             this.getItems();
         },
-        $route: function (to, from){
+        '$route': function (to, from){
             this.getRateLimit();
+        },
+        sortBy: function (to, from){
+            this.getItems();
+        },
+        sortDirection: function (to, from){
+            this.getItems();
         }
     },
     computed: {
@@ -143,11 +172,11 @@ export default {
             // build all api url
             // todo: template literal
             if (this.type === 'all') {
-                this.apiLink = this.$parent.epIssues + '?page=' + this.currentPage + '&per_page=' + this.perPage;
+                this.apiLink = this.$parent.epIssues + '?page=' + this.currentPage + '&per_page=' + this.perPage + '&sort=' + this.sortBy + '&direction=' + this.sortDirection;
             } else if(this.type === 'search') {
-                this.apiLink = `https://api.github.com/search/issues?q=${this.query}+repo:jenstornell/kirby-plugins&sort=created&order=asc&page=${this.currentPage}&per_page=${this.perPage}`;
+                this.apiLink = `https://api.github.com/search/issues?q=${this.query}+repo:jenstornell/kirby-plugins&sort=${this.sortBy}&order=${this.sortDirection}&page=${this.currentPage}&per_page=${this.perPage}`;
             } else {
-                this.apiLink = this.$parent.epIssues + '?labels=' + this.type + '&page=' + this.currentPage + '&per_page=' + this.perPage;
+                this.apiLink = this.$parent.epIssues + '?labels=' + this.type + '&page=' + this.currentPage + '&per_page=' + this.perPage + '&sort=' + this.sortBy + '&direction=' + this.sortDirection;
             }
 
             console.log("api link",this.apiLink)
@@ -158,6 +187,7 @@ export default {
                       this.loading = false;
                       this.results = response.data.items;
                       this.resultsCount = response.data.total_count;
+                      this.getRateLimit();
                     } else {
                       this.loading = false;
                       this.results = response.data;

@@ -17,7 +17,7 @@ export default {
 .icon {
     height: 1.7rem;
     width: 1.7rem;
-    fill: red;
+    /* fill: red; */
 }
 </style>
 

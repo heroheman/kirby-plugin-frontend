@@ -1,4 +1,4 @@
-# revue
+# kirby-plugins frontend
 
 > A Vue.js project
 

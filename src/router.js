@@ -35,7 +35,7 @@ export default new Router({
       component: Detail
     },
     {
-      path: '/list/:type/:query?/:page?',
+      path: '/list/:type/:page?',
       name: 'list',
       component: List
     },
