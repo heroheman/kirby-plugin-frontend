@@ -5,7 +5,8 @@
     <input class="list__searchfield" name="" type="text"
            placeholder="search for plugin, label, author or anything else"
            v-model="query"
-           @input="searchQuery" />
+           @keyup.enter="searchQuery"
+           />
 
     <div class="list__tools">
       <p class="list__ratelimit" v-if="rateLimit !== ''">
@@ -14,9 +15,9 @@
         /
         {{rateLimit.resources.search.limit}}
       </p>
-      <button class="list__searchbutton" @click="searchQuery">
+      <!-- <button class="list__searchbutton" @click="searchQuery">
         <img alt="" src="../assets/icons/search.png"/>
-      </button>
+      </button> -->
     </div>
     <p class="list__smallprint">
       The public Github API is very limited without authentication. If the limit is reached, please wait a moment.
@@ -136,8 +137,8 @@ export default {
         }
     },
     created() {
-        this.getItems();
         this.getLabels();
+        this.getItems();
         this.getRateLimit();
     },
     watch: {
@@ -150,7 +151,7 @@ export default {
             this.getItems();
         },
         '$route.params.page': function() {
-            this.currentPage = this.$route.params.page;
+            this.currentPage = this.$route.params.page || 1;
             this.getItems();
         },
         '$route': function (to, from){
@@ -188,6 +189,7 @@ export default {
                       this.results = response.data.items;
                       this.resultsCount = response.data.total_count;
                       this.getRateLimit();
+                      console.log("search called with api link", this.apiLink)
                     } else {
                       this.loading = false;
                       this.results = response.data;
