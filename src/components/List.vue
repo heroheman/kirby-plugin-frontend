@@ -41,7 +41,7 @@
     <pacman-loader :loading="loading" color="red"></pacman-loader>
   </div>
 
-  <div class="list__toolbar toolbar">
+  <div class="list__toolbar toolbar" v-if="showToolbar">
     <p class="toolbar__text" v-if="query_temp !== ''">
       <strong>{{ resultsCount }}</strong> results for term <strong>{{ query_temp }}</strong>:
     </p>
@@ -133,6 +133,7 @@ export default {
             resultsCount: '',
             labels: [],
             loading: true,
+            showToolbar: false,
             labelsPerPage: 100
         }
     },
