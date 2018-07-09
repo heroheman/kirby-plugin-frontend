@@ -4,7 +4,13 @@
   <ul class="pagination">
     <li v-for="(page, i) in lastPage" v-if="lastPage > 1" :key="i">
       <!-- Page: {{page}} LastPage {{lastPage}} -->
-      <router-link :to="{name: 'list-label', params: {type: type, query: query, page: page}}">{{page}}</router-link>
+      <!-- #TODO: For some reason the all page takes the page as query -->
+      <router-link :to="{name: 'list', params: {type: type, query: query, page: page}}" v-if="type !== 'all'">
+        {{page}}
+      </router-link>
+      <router-link :to="{name: 'list-all-page', params: {type: type , page: page}}" v-if="type === 'all'">
+        {{page}}
+      </router-link>
     </li>
   </ul>
 </div>
@@ -14,7 +20,6 @@
 export default {
     name: 'pagination',
     props: {
-        url: String,
         query: String,
         type: String,
         lastPage: [String, Number],

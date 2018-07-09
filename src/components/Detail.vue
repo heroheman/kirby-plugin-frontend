@@ -17,14 +17,13 @@
         </div>
 
         <vue-markdown class="detail__body-main" :source="detail.body">
-            Loading Data
         </vue-markdown>
 
         <div class="detail__body-section">
             <ul class="detail__labels labels">
                 <li class="listitem__label" v-for="label in detail.labels">
                     <router-link
-                    :to="{name:'list-label', params:{ type: label.name }}"
+                    :to="{name:'list', params:{ type: label.name }}"
                     :class="['label', getLabelClass(label.name)]"
                     >
                     {{ label.name }}
@@ -141,8 +140,13 @@ export default {
         getReadme: function() {
             // axios.get('https://api.github.com/repos/octokit/octokit.rb/contents/README.md').then(response => {
             axios.get('https://api.github.com/repos/'+ this.pluginRepo + '/readme').then(response => {
-                this.readme = atob(response.data.content);
-            });
+              this.readme = atob(response.data.content);
+            })
+            .catch( e => {
+              console.log(e);
+              this.readme = 'This repository has no readme. Dang!';
+            })
+            ;
         },
         hideReadme: function () {
             this.readme = '';

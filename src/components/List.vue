@@ -25,12 +25,12 @@
 
   <!-- <ul class="labels"> -->
   <!--   <li> -->
-  <!--     <router-link :to="{ name: 'list-label', params: { type: 'all' }}"> -->
+  <!--     <router-link :to="{ name: 'list', params: { type: 'all' }}"> -->
   <!--       all -->
   <!--     </router-link> -->
   <!--   </li> -->
   <!--   <li v-for="label in labels"> -->
-  <!--     <router-link :to="{ name: 'list-label', params: { type: label.name }}"> -->
+  <!--     <router-link :to="{ name: 'list', params: { type: label.name }}"> -->
   <!--       {{ label.name}} -->
   <!--     </router-link> -->
   <!--   </li> -->
@@ -54,7 +54,7 @@
       <ul class="labels listitem__labels">
         <li class="listitem__label" v-for="label in item.labels">
           <router-link
-            :to="{name:'list-label', params:{ type: label.name }}"
+            :to="{name:'list', params:{ type: label.name }}"
             :class="['label', getLabelClass(label.name)]"
             >
             {{ label.name }}
@@ -71,9 +71,8 @@
     No Results
   </div>
 
-  <Pagination
+  <Pagination v-if="!loading"
     :lastPage="lastPage"
-    :url="apiBaseLink"
     :query="query"
     :type="type"
     :perPage="perPage">
@@ -123,12 +122,12 @@ export default {
             this.type = this.$route.params.type;
             this.getItems();
         },
-        '$route.params.page': function() {
-            this.currentPage = this.$route.params.page;
-            this.getItems();
-        },
         '$route.params.query': function() {
             this.query = this.$route.params.query;
+            this.getItems();
+        },
+        '$route.params.page': function() {
+            this.currentPage = this.$route.params.page;
             this.getItems();
         },
         $route: function (to, from){
@@ -209,11 +208,11 @@ export default {
                 this.query_temp = this.query;
                 this.resultsCount = '';
                 if (this.query !== '') {
-                    this.$router.push({name: 'list-label', params: {type: 'search', query: this.query}});
+                    this.$router.push({name: 'list-search', params: {type: 'search', query: this.query}});
                 } else {
                     this.query = '';
                     this.query_temp = this.query;
-                    this.$router.push({name: 'list-label', params: {type: 'all'}});
+                    this.$router.push({name: 'list', params: {type: 'all'}});
                 }
             }, 1000);
         }
@@ -222,6 +221,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import './../assets/scss/_vars.scss';
+
 .list {
   position: relative;
     padding: 10px;
@@ -238,9 +239,11 @@ export default {
         padding: 1rem;
     }
     &__tools {
-        position: absolute;
-        right: 1rem;
-        top: 1rem;
+        @media screen and (min-width: $xs) {
+          position: absolute;
+          right: 1rem;
+          top: 1rem;
+        }
     }
     &__ratelimit,
     &__searchbutton {
@@ -265,10 +268,13 @@ export default {
     }
     &__smallprint {
         font-size: 1.2rem;
-        text-align: right;
         color: #aaa;
         margin: 0;
         margin-top: 0.3rem;
+
+        @media screen and (min-width: $xs) {
+          text-align: right;
+        }
     }
 
 
@@ -287,10 +293,18 @@ export default {
 
 .listitem {
     display: grid;
-    grid-template-areas: "name name labels"
-                             "description description description";
-    grid-template-columns: 40% 1fr;
-    grid-template-rows: 1fr;
+    grid-template-areas: "name"
+                          "description"
+                          "labels";
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto 1fr;
+
+    @media screen and (min-width: $sm) {
+      grid-template-areas: "name name labels"
+                              "description description description";
+      grid-template-columns: 40% 1fr;
+      grid-template-rows: 1fr;
+    }
 
     &__name {
         grid-area: name;
@@ -299,8 +313,13 @@ export default {
     }
     &__labels {
         grid-area: labels;
-        text-align: right;
+        text-align: left;
         margin: 0;
+        padding: 1rem 0;
+        @media screen and (min-width: $sm) {
+          text-align: right;
+          padding: 0;
+        }
     }
     &__description {
         grid-area: description;

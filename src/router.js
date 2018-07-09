@@ -13,6 +13,7 @@ export default new Router({
   scrollBehavior() {
     return { x: 0, y: 0 };
   },
+  mode: 'history',
   routes: [
     {
       path: '/',
@@ -35,12 +36,17 @@ export default new Router({
     },
     {
       path: '/list/:type/:query?/:page?',
-      name: 'list-label',
+      name: 'list',
       component: List
     },
     {
-      path: '/list/:type/:page',
-      name: 'list-label-page',
+      path: '/list/:type/:query/:page?',
+      name: 'list-search',
+      component: List
+    },
+    {
+      path: '/list/all/:page',
+      name: 'list-all-page',
       component: List
     }
   ]
@@ -51,6 +57,7 @@ export default new Router({
 
   // /list/Panel/2
   // /list/Panel-Screenshot/2
+  // /list/search/Suchbegriff/3
   // /list/:type/:page
 
   // /detail/:id

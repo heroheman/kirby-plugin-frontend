@@ -3,9 +3,9 @@
         <SvgIcons></SvgIcons>
 
         <!-- l-header -->
-        <header-section :labels="labels">
+        <HeaderSection :labels="labels">
             kirby <span>plugins</span>
-        </header-section>
+        </HeaderSection>
 
         <main class="l-main">
             <router-view/>
@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import Header from './components/Header.vue';
+import HeaderSection from './components/Header.vue';
 import Footer from './components/Footer.vue';
 import SvgIcons from './components/svgicons.vue';
 import List from './components/List.vue';
@@ -24,7 +24,7 @@ import axios from 'axios';
 export default {
     name: 'app',
     components: {
-        'header-section': Header,
+        HeaderSection,
         List,
         SvgIcons
     },
