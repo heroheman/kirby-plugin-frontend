@@ -181,8 +181,6 @@ export default {
                 this.apiLink = this.$parent.epIssues + '?labels=' + this.type + '&page=' + this.currentPage + '&per_page=' + this.perPage + '&sort=' + this.sortBy + '&direction=' + this.sortDirection;
             }
 
-            console.log("api link",this.apiLink)
-
             axios.get(this.apiLink)
                 .then(response => {
                     if(this.type === 'search') {
@@ -233,7 +231,7 @@ export default {
                 })
         },
         searchQuery: function() {
-            let url = `https://api.github.com/search/issues?q=${this.query}+repo:jenstornell/kirby-plugins&sort=created&order=asc`;
+            // let url = `https://api.github.com/search/issues?q=${this.query}+repo:jenstornell/kirby-plugins&sort=created&order=asc`;
 
             clearTimeout(timeout);
 
@@ -257,7 +255,7 @@ export default {
 @import './../assets/scss/_vars.scss';
 
 .list {
-  position: relative;
+    position: relative;
     padding: 10px;
     min-height: 70vh;
 

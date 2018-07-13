@@ -16,8 +16,7 @@
           <pacman-loader :loading="loading" color="red"></pacman-loader>
         </div>
 
-        <vue-markdown class="detail__body-main" :source="detail.body">
-        </vue-markdown>
+        <vue-markdown class="detail__body-main" :source="detail.body" />
 
         <div class="detail__body-section">
             <ul class="detail__labels labels">
