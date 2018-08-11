@@ -1,3 +1,5 @@
+# Deprecated. See: https://github.com/heroheman/kirby-directory
+
 # kirby-plugins frontend
 
 > A Vue.js project
